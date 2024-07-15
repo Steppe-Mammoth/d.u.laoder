@@ -1,0 +1,42 @@
+version: "3.8"
+
+services:
+  nginx:
+    container_name: ${PROJECT}-nginx
+    image: nginx:stable
+    restart: always
+    depends_on:
+      - app
+    ports:
+      - "127.0.0.1:${NGINX_PORT}:80"
+    networks:
+      - loader
+    environment:
+      - PROJECT=${PROJECT}
+      - PATH_STORAGE=${PATH_STORAGE}
+      - URL_PATH_UPLOADER=${URL_PATH_UPLOADER}
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./storage:/storage
+    command: /bin/bash -c "nginx -g 'daemon off;'"
+
+  app:
+    container_name: ${PROJECT}-app
+    image: hub.gost-dev.com/d.u.loader-app
+    restart: always
+    networks:
+      - loader
+    environment:
+      - URL_HOST=${URL_HOST}
+      - URL_DOWLOADER=${URL_DOWLOADER}
+      - URL_PATH_UPLOADER=${URL_PATH_UPLOADER}
+      - PATH_STORAGE=${PATH_STORAGE}
+      - PATH_STORAGE_BUFFER=${PATH_STORAGE_BUFFER}
+    volumes:
+      - ./storage:${PATH_STORAGE}
+    command: /bin/bash -c "uvicorn src.app:app --host 0.0.0.0 --port 80"
+
+networks:
+  loader:
+    name: loader-NET
+    driver: bridge

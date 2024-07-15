@@ -1,0 +1,20 @@
+server {
+    listen                                  80;
+    server_name                             localhost;
+    client_max_body_size                    50M;
+    gzip                                    on;
+    gzip_types                              text/plain application/json application/javascript text/css image/png image/jpeg image/jpg image/webp;
+
+    location / {
+        proxy_pass                          http://app/;
+    }
+
+    location /uploader {
+        proxy_pass                          http://app/uploader;
+        client_max_body_size                50000M;
+    }
+
+    location /storage/ {
+        alias                               /storage/;
+    }
+}
